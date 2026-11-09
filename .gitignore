@@ -1,0 +1,26 @@
+.venv/
+config/credentials.json
+.vendor/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# data lake (large / reproducible from Tushare)
+data/
+data/market.db
+data/market.db-*
+data/cache/
+data/qlib_cn/
+data/events/
+data/ingest_run.log
+
+# generated
+reports/*
+!reports/alphaforge_report.html
+artifacts/
+mlruns/
+
+.DS_Store
+qlib-main/
+qlib-main.zip

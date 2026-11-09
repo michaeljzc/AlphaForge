@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlphaForge · 量化研究控制台</title>
+<link rel="stylesheet" href="/static/style.css?v=8">
+<script src="/static/vendor/echarts.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">AF</div>
+      <div class="brand-text"><b>AlphaForge</b><span>Qlib 量化研究平台</span></div>
+    </div>
+    <nav id="nav">
+      <button class="nav-item active" data-view="overview"><i>◈</i><span>总览</span></button>
+      <button class="nav-item" data-view="factors"><i>ƒ</i><span>因子库</span></button>
+      <button class="nav-item" data-view="backtest"><i>◒</i><span>组合回测</span></button>
+      <button class="nav-item" data-view="events"><i>⚡</i><span>T0 事件</span></button>
+      <button class="nav-item" data-view="mining"><i>⑂</i><span>GP 挖掘</span></button>
+      <button class="nav-item" data-view="qlib"><i>Q</i><span>Qlib 原生</span></button>
+      <button class="nav-item" data-view="sources"><i>☁</i><span>数据源</span></button>
+    </nav>
+    <div class="side-foot">
+      <div class="dot" id="side-dot"></div>
+      <span id="side-status">连接中…</span>
+      <small>127.0.0.1 · local only</small>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="page-title">总览</h1>
+        <p id="page-sub">数据底座 → 因子闸门 → 组合构建 → A 股回测 → 事件截面</p>
+      </div>
+      <div class="top-actions">
+        <span class="asof" id="asof">—</span>
+        <button class="btn ghost" id="refresh">↻ 刷新</button>
+      </div>
+    </header>
+
+    <section class="view active" id="view-overview">
+      <div class="kpi-grid" id="kpi"></div>
+      <div class="grid two">
+        <div class="card span2">
+          <div class="card-head"><h3>组合净值</h3><span class="badge blue">2024–2026 样本外</span></div>
+          <div class="chart" id="chart-overview-equity"></div>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <div class="card-head"><h3>因子闸门 Top</h3><a class="link" data-goto="factors">查看全部 →</a></div>
+          <div id="overview-factors" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>T0 事件分级</h3><a class="link" data-goto="events">事件分析 →</a></div>
+          <div class="chart sm" id="chart-overview-events"></div>
+        </div>
+      </div>
+      <div class="note" id="overview-note"></div>
+    </section>
+
+    <section class="view" id="view-factors">
+      <div class="card">
+        <div class="toolbar">
+          <select id="factor-scope" class="input select"><option value="evaluated">已评估因子</option><option value="library">全部因子字典</option></select>
+          <input id="factor-search" class="input" placeholder="搜索因子名 / 说明 / 表达式…">
+          <select id="factor-category" class="input select"><option value="">全部类别</option></select>
+        </div>
+        <div class="eval-row">
+          <input id="factor-expr" class="input mono" placeholder="输入表达式，例如 ts_std(ret,20)/ts_std(ret,60)">
+          <button class="btn primary" id="eval-btn">在线评估</button>
+          <span class="hint">月度 IC · 中性化 · 成本 30bps</span>
+        </div>
+        <div id="factor-table" class="table-wrap"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-backtest">
+      <div class="kpi-grid small" id="bt-kpi"></div>
+      <div class="grid two">
+        <div class="card span2">
+          <div class="card-head"><h3>净值 vs 基准</h3><span class="badge blue" id="bt-period">—</span></div>
+          <div class="chart" id="chart-bt-equity"></div>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card"><div class="card-head"><h3>回撤</h3></div><div class="chart sm" id="chart-bt-dd"></div></div>
+        <div class="card"><div class="card-head"><h3>月度收益</h3></div><div class="chart sm" id="chart-bt-monthly"></div></div>
+      </div>
+      <div class="note">T+1 · 涨跌停不可成交 · 停牌 · 100 股整手 · 佣金/印花税/滑点/成交额占比全部计入。</div>
+    </section>
+
+    <section class="view" id="view-events">
+      <div class="kpi-grid small" id="ev-kpi"></div>
+      <div class="grid two">
+        <div class="card"><div class="card-head"><h3>三级标签分布</h3></div><div class="chart sm" id="chart-ev-tiers"></div></div>
+        <div class="card"><div class="card-head"><h3>事件截面 IC</h3></div><div class="chart sm" id="chart-ev-ic"></div></div>
+      </div>
+      <div class="grid two">
+        <div class="card span2"><div class="card-head"><h3>事件组合净值</h3><span class="badge purple">T0+1 开盘入场 · 60 日</span></div><div class="chart" id="chart-ev-equity"></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>事件特征 IC</h3></div><div id="ev-table" class="table-wrap"></div></div>
+      <div class="audit" id="ev-audit"></div>
+    </section>
+
+    <section class="view" id="view-mining">
+      <div class="card">
+        <div class="card-head"><h3>遗传规划进化</h3><span class="badge purple" id="gp-evals">—</span></div>
+        <div class="chart" id="chart-gp"></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>候选因子（Train / Valid / Test）</h3></div><div id="gp-table" class="table-wrap"></div></div>
+      <div class="note">适应度 = |RankIC| + 0.05·|ICIR| − 0.0002·节点数；对市值/价格/换手做快速中性化；T0 事件层不参与 GP。</div>
+    </section>
+
+    <section class="view" id="view-qlib">
+      <div class="kpi-grid small" id="qlib-kpi"></div>
+      <div class="grid two">
+        <div class="card"><div class="card-head"><h3>Qlib 数据一致性</h3></div><div id="qlib-parity" class="kv"></div></div>
+        <div class="card"><div class="card-head"><h3>Qlib 原生回测</h3></div><div class="chart sm" id="chart-qlib-equity"></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Qlib LGBModel / 双引擎对照</h3></div><div id="qlib-table" class="table-wrap"></div></div>
+      <div class="note">模型/记录器/策略/执行器为 Qlib 代码；Alpha158 因子值由 AlphaForge 向量化引擎计算后以 DatasetH 兼容对象提供。</div>
+    </section>
+
+    <section class="view" id="view-sources">
+      <div class="grid three" id="source-cards"></div>
+      <div class="card"><div class="card-head"><h3>数据湖</h3><span class="badge blue">market.db</span></div><div id="data-counts" class="table-wrap"></div></div>
+      <div class="card">
+        <div class="card-head"><h3>如何接入 iFinD / DataYes</h3></div>
+        <pre class="codeblock">alphaforge sources status --probe
+alphaforge sources probe --source ifind
+alphaforge sources fetch --source datayes --codes 000001,600000 --start 2024-01-01 --end 2024-01-31
+# 确认后再写库
+alphaforge sources fetch --source datayes --codes ... --write</pre>
+        <p class="muted">默认只读预览，不污染 Tushare 主库；iFinD 支持 none/qfq/hfq，DataYes 自带累计复权因子。</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div><h2 id="drawer-title">因子详情</h2><p id="drawer-sub"></p></div>
+    <button class="icon-btn" id="drawer-close">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+<script src="/static/app.js?v=8"></script>
+</body>
+</html>

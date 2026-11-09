@@ -1,0 +1,15 @@
+pyqlib==0.9.7
+numpy>=2.0
+pandas>=2.2
+scipy>=1.11
+scikit-learn>=1.3
+lightgbm>=4.0
+pyarrow>=14.0
+matplotlib>=3.7
+plotly>=5.18
+jinja2>=3.1
+pyyaml>=6.0
+tqdm>=4.65
+tushare>=1.2
+fastapi>=0.100
+uvicorn>=0.23
